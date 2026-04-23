@@ -1,0 +1,4 @@
+creation_rules:
+  - path_regex: secrets/.*\.yaml$
+    age: >-
+      REEMPLAZAR-CON-CLAVE-AGE-DEL-OPERADOR
