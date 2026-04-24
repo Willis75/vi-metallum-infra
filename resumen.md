@@ -1,35 +1,57 @@
 # Resumen de Sesión — vi-metallum-infra — 2026-04-24
 
 ## Completado
-- Flake NixOS escrito: `flake.nix`, `hosts/vm-control-01/{default.nix,disko.nix}`, `modules/{base.nix,hardening.nix}`
-- `flake.lock` generado (nixpkgs b12141e, disko 32f4236, sops-nix bef289e, deploy-rs 77c906c)
-- `nix flake check` pasó limpio (✅ deploy-activate ✅ deploy-schema)
-- `nixos-anywhere` ejecutado exitosamente — Ubuntu borrado, NixOS 26.05 instalado en vm-control-01
-- Host arrancando: kernel 6.18.23, systemd-boot UEFI, ext4 GPT, SSH root con key ed25519
+
+### Fase A (sesión anterior)
+- Flake NixOS: `flake.nix`, `hosts/vm-control-01/{default.nix,disko.nix}`, `modules/{base.nix,hardening.nix}`
+- `nix flake check` ✅ — `nixos-anywhere` ejecutado — NixOS 26.05 instalado (kernel 6.18.23)
+
+### Fase B
+- SSH al host `178.104.209.199` — host confirmado
+- `tailscale up` → `vm-control-01` en `100.126.11.26`
+- `age-keygen -o /var/lib/sops-nix/key.txt` — pubkey: `age1gl7leqyhfvyaflc7t5cktjq4k75qwnd4kyk79td03lkpxxr35fps03lpuf`
+
+### Fase C
+- `.sops.yaml` actualizado con age pubkey real del host
+- Secretos encriptados (AES256-GCM): `tailscale.yaml`, `storage-box.yaml`, `telegram.yaml`
+- Commit `b93398b`
+
+### Fase D
+- `modules/secrets.nix`: sops age key path
+- `modules/postgres.nix`: Postgres 16 + two-stage WAL archive
+  - Stage 1: `archive_command = "cp %p /var/lib/wal-archive/%f"` (local, sin seccomp issues)
+  - Stage 2: `wal-archive-push.timer` cada 5min → Storage Box via rclone SFTP
+- `hosts/vm-control-01/default.nix`: sops secrets + `tailscale-autoconnect.service`
+- `flake.nix`: sops-nix module + postgres + secrets modules
+- Commit `76d9d30`
+
+### PITR Test ✅ GATE VERDE
+- Recovery target `18:05:38` → `recovery stopping before commit at 18:05:42 (T2)`
+- T1 row presente, T2 ausente — PITR verificado
+- Secuencia: base backup → insert T1 → insert T2 → restore → recovery a T1
 
 ## Pendientes
-- Fase B: SSH al host → `tailscale up` manual + `age-keygen -o /var/lib/sops-nix/key.txt`
-- Fase C: agregar age pubkey al `.sops.yaml`, encriptar secretos (Tailscale authkey, Telegram token, Storage Box password), rebuild con deploy-rs
-- Fase D: escribir `modules/postgres.nix` (Postgres 16, bind Tailscale, WAL archive a Storage Box BX11)
-- Test PITR (gate obligatorio antes de Fase 2 / código Go)
-- Commit del flake.lock + archivos staged a `vi-metallum-infra`
+- Fase 2: scaffolding Go — `rl-crypto-trading-v2/` con módulos, ADRs, migrations
+- Freeze del sistema legacy (`rl-crypto-trading/FREEZE.md` + postmortem)
+- Ajuste firewall: cerrar SSH público (puerto 22) a Tailscale-only después de confirmar acceso Tailscale estable
+- `vimet_admin` role en Postgres necesita `GRANT SUPERUSER` manual (o via NixOS `ensureClauses` cuando se configure)
 
 ## Riesgos / Watch Items
-- SSH key del laptop (WSL permisos 0777 en `/mnt/c/...`) — usar `/root/.ssh/id_ed25519` en WSL
-- CGNAT multi-WAN: firewall Hetzner permite 189.159.84.187/32 + 187.190.176.212/32; moverse a Tailscale-only después de Fase B
-- `.sops.yaml` tiene placeholder de age key — no encriptar secretos reales hasta generar la key en el host
-- nixos-anywhere necesita `--ssh-option "IdentityFile=/root/.ssh/id_ed25519"` y `--kexec none` si el host ya está en kexec
+- `wal-archive-push.service` corre como root — revisar si puede correr como usuario dedicado
+- WAL staging en `/var/lib/wal-archive/` — mismo disco que data dir; si el disco se llena, ambos fallan
+- `deploy-rs` requiere `nix develop --command deploy` (no está en PATH global de WSL)
+- CGNAT: acceso SSH público todavía habilitado en Hetzner firewall — mover a Tailscale-only en Fase 2
 
 ## Decisiones tomadas
-- cpx32 FSN1 (4vCPU/8GB/160GB AMD) — Storage Box BX11 1TB para WAL
-- UEFI + systemd-boot + GPT (ESP 512M vfat + root 100% ext4 noatime)
-- Bootstrap sin sops-nix primero (Fase A) → age key post-install (Fase B) → sops secretos (Fase C)
-- Workers GPU (blue5pl, mtto-server) quedan en Ubuntu; NixOS-ificar en Fase 10+
+- Two-stage WAL archive (cp local + rclone timer) — evita seccomp/SIGSYS de Postgres `SystemCallFilter=~@resources`
+- Data dir NixOS Postgres 16: `/var/lib/postgresql/16/` (no `/16/main/`)
+- PITR restore: `recovery.signal` + `postgresql.auto.conf` en data dir — sobrevive pre-start NixOS (solo symlinks `postgresql.conf`)
+- `wal-archive-push` usa known_hosts pinned en nix store (no TOFU, no skip verification)
 
 ## Archivos modificados
-- `vi-metallum-infra/flake.nix` — reescrito con inputs reales + deploy node
-- `vi-metallum-infra/flake.lock` — generado nuevo
-- `vi-metallum-infra/hosts/vm-control-01/default.nix` — creado
-- `vi-metallum-infra/hosts/vm-control-01/disko.nix` — creado
-- `vi-metallum-infra/modules/base.nix` — creado
-- `vi-metallum-infra/modules/hardening.nix` — creado
+- `flake.nix` — añadidos sops-nix + postgres + secrets modules
+- `modules/secrets.nix` — creado
+- `modules/postgres.nix` — creado (two-stage WAL archive)
+- `hosts/vm-control-01/default.nix` — sops secrets + tailscale-autoconnect
+- `.sops.yaml` — age pubkey real
+- `secrets/vm-control-01/{tailscale,storage-box,telegram}.yaml` — encriptados
