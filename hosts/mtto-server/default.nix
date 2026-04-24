@@ -51,7 +51,6 @@
   sops.secrets."n8n/env" = {
     sopsFile = ../../secrets/mtto-server/n8n.yaml;
     key = "env";
-    owner = "n8n";
     mode = "0400";
   };
   sops.secrets."cloudflared/token" = {

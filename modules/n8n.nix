@@ -1,29 +1,25 @@
 { config, pkgs, lib, ... }:
 
 {
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "n8n" ];
+
   services.n8n = {
     enable = true;
-    settings = {
-      # Non-secret settings — credentials come via EnvironmentFile
-      db.type = "postgresdb";
-      db.postgresdb.host = "localhost";
-      db.postgresdb.port = 5432;
-      db.postgresdb.database = "n8n";
-      db.postgresdb.user = "n8n";
-
-      queue.bull.redis.host = "localhost";
-      queue.bull.redis.port = 6379;
-
-      executions.mode = "regular";
-
-      generic.timezone = "America/Monterrey";
-
-      "n8n.editor_base_url" = "https://n8n.vimetallum.com";
-      "n8n.webhook_url" = "https://n8n.vimetallum.com";
-      "n8n.secure_cookie" = true;
-      "n8n.proxy_hops" = 1;
-
-      "n8n.community_packages_allow_tool_usage" = true;
+    environment = {
+      DB_TYPE                               = "postgresdb";
+      DB_POSTGRESDB_HOST                    = "localhost";
+      DB_POSTGRESDB_PORT                    = "5432";
+      DB_POSTGRESDB_DATABASE                = "n8n";
+      DB_POSTGRESDB_USER                    = "n8n";
+      QUEUE_BULL_REDIS_HOST                 = "localhost";
+      QUEUE_BULL_REDIS_PORT                 = "6379";
+      EXECUTIONS_MODE                       = "regular";
+      GENERIC_TIMEZONE                      = "America/Monterrey";
+      N8N_EDITOR_BASE_URL                   = "https://n8n.vimetallum.com";
+      WEBHOOK_URL                           = "https://n8n.vimetallum.com";
+      N8N_SECURE_COOKIE                     = "true";
+      N8N_PROXY_HOPS                        = "1";
+      N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE = "true";
     };
   };
 

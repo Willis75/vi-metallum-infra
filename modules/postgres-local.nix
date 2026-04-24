@@ -4,12 +4,12 @@
   services.postgresql = {
     enable = true;
     package = pkgs.postgresql_16;
-    port = 5432;
     enableTCPIP = true;
 
     settings = {
       # Accept connections from localhost and Tailscale CIDR
-      listen_addresses = "localhost";
+      listen_addresses = lib.mkForce "localhost";
+      port = 5432;
     };
 
     authentication = lib.mkOverride 10 ''
