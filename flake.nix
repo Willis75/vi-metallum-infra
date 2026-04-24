@@ -31,8 +31,11 @@
           inherit system;
           modules = [
             disko.nixosModules.disko
+            sops-nix.nixosModules.sops
+            ./modules/secrets.nix
             ./modules/base.nix
             ./modules/hardening.nix
+            ./modules/postgres.nix
             ./hosts/vm-control-01
           ];
         };
