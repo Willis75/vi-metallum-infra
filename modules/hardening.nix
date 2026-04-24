@@ -1,7 +1,7 @@
 {
   services.openssh = {
     enable = true;
-    openFirewall = true;
+    openFirewall = false;
     settings = {
       PasswordAuthentication = false;
       KbdInteractiveAuthentication = false;
@@ -15,7 +15,7 @@
 
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [ 22 ];
+    allowedTCPPorts = [];
     trustedInterfaces = [ "tailscale0" ];
     logRefusedConnections = false;
   };

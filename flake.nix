@@ -36,7 +36,28 @@
             ./modules/base.nix
             ./modules/hardening.nix
             ./modules/postgres.nix
+            ./modules/paper-scheduler.nix
+            ./modules/python-ml.nix
             ./hosts/vm-control-01
+          ];
+        };
+
+        mtto-server = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            disko.nixosModules.disko
+            sops-nix.nixosModules.sops
+            ./modules/base.nix
+            ./modules/hardening.nix
+            ./modules/postgres-local.nix
+            ./modules/redis.nix
+            ./modules/n8n.nix
+            ./modules/cloudflared.nix
+            ./modules/minio.nix
+            ./modules/caddy-local.nix
+            ./modules/mtto-albercas.nix
+            ./modules/stock-radar.nix
+            ./hosts/mtto-server
           ];
         };
       };
@@ -47,6 +68,16 @@
           user = "root";
           sshUser = "root";
           path = deploy-rs.lib.${system}.activate.nixos self.nixosConfigurations.vm-control-01;
+        };
+      };
+
+      deploy.nodes.mtto-server = {
+        # Deploy via Tailscale IP
+        hostname = "100.95.51.67";
+        profiles.system = {
+          user = "root";
+          sshUser = "wumni";
+          path = deploy-rs.lib.${system}.activate.nixos self.nixosConfigurations.mtto-server;
         };
       };
 

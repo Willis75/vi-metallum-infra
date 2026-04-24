@@ -1,4 +1,13 @@
 creation_rules:
-  - path_regex: secrets/.*\.yaml$
+  # vm-control-01 secrets — encrypted with vm-control-01 age key
+  - path_regex: secrets/vm-control-01/.*\.yaml$
     age: >-
       age1gl7leqyhfvyaflc7t5cktjq4k75qwnd4kyk79td03lkpxxr35fps03lpuf
+
+  # mtto-server secrets — key generated after NixOS install (F10.3).
+  # Replace age1PENDING with the actual pubkey from:
+  #   ssh wumni@100.95.51.67 "cat /var/lib/sops-nix/key.txt | age-keygen -y"
+  # Then run: sops rotate secrets/mtto-server/*.yaml
+  - path_regex: secrets/mtto-server/.*\.yaml$
+    age: >-
+      age1PENDING

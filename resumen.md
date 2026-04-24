@@ -1,57 +1,50 @@
-# Resumen de Sesión — vi-metallum-infra — 2026-04-24
+# Resumen de Sesión — rl-crypto-trading-v2 — 2026-04-24 13:00 CST
 
-## Completado
+## Completado esta sesión
 
-### Fase A (sesión anterior)
-- Flake NixOS: `flake.nix`, `hosts/vm-control-01/{default.nix,disko.nix}`, `modules/{base.nix,hardening.nix}`
-- `nix flake check` ✅ — `nixos-anywhere` ejecutado — NixOS 26.05 instalado (kernel 6.18.23)
+### Task #14 — TradingEnv 16-feature wiring
+- `scripts/env/market_env.py` — MarketEnvironment completo: EMA/RSI/MACD/BB/realizados vol, contrato 16-feature byte-by-byte del legacy
+- `scripts/env/trading_env.py` — TradingEnv gymnasium wrapper (Discrete(3), Box(-3,3,16))
+- `scripts/env/__init__.py` — exports
+- `scripts/trainer.py` — reescrito: fetches OHLCV desde Postgres (psycopg2), entrena PPO/DQN en TradingEnv real, emite JSON-lines con metric+artifact
+- `scripts/paper_trader.py` — reescrito: usa MarketEnvironment para inferencia, obs 16-feature real
 
-### Fase B
-- SSH al host `178.104.209.199` — host confirmado
-- `tailscale up` → `vm-control-01` en `100.126.11.26`
-- `age-keygen -o /var/lib/sops-nix/key.txt` — pubkey: `age1gl7leqyhfvyaflc7t5cktjq4k75qwnd4kyk79td03lkpxxr35fps03lpuf`
+### Task #15 — Importar 13 modelos legacy
+- `scripts/data/graduated_legacy.json` — copia local del graduated.json de blue5pl con mapeo slot→model_path
+- `migrations/00009_legacy_seed.sql` — INSERT 13 filas con provenance='legacy_trusted', live_status='paper_active'
+- `scripts/import_legacy_models.py` — script de validación SB3 + insert para futura re-ejecución
+- `goose up` ✅ — 13 filas en graduated, verificadas con SELECT
 
-### Fase C
-- `.sops.yaml` actualizado con age pubkey real del host
-- Secretos encriptados (AES256-GCM): `tailscale.yaml`, `storage-box.yaml`, `telegram.yaml`
-- Commit `b93398b`
-
-### Fase D
-- `modules/secrets.nix`: sops age key path
-- `modules/postgres.nix`: Postgres 16 + two-stage WAL archive
-  - Stage 1: `archive_command = "cp %p /var/lib/wal-archive/%f"` (local, sin seccomp issues)
-  - Stage 2: `wal-archive-push.timer` cada 5min → Storage Box via rclone SFTP
-- `hosts/vm-control-01/default.nix`: sops secrets + `tailscale-autoconnect.service`
-- `flake.nix`: sops-nix module + postgres + secrets modules
-- Commit `76d9d30`
-
-### PITR Test ✅ GATE VERDE
-- Recovery target `18:05:38` → `recovery stopping before commit at 18:05:42 (T2)`
-- T1 row presente, T2 ausente — PITR verificado
-- Secuencia: base backup → insert T1 → insert T2 → restore → recovery a T1
+### Verificaciones
+- `go build ./...` ✅ — sin errores
+- Goose migración 00009 aplicada ✅ contra postgres:16 local (docker-compose)
 
 ## Pendientes
-- Fase 2: scaffolding Go — `rl-crypto-trading-v2/` con módulos, ADRs, migrations
-- Freeze del sistema legacy (`rl-crypto-trading/FREEZE.md` + postmortem)
-- Ajuste firewall: cerrar SSH público (puerto 22) a Tailscale-only después de confirmar acceso Tailscale estable
-- `vimet_admin` role en Postgres necesita `GRANT SUPERUSER` manual (o via NixOS `ensureClauses` cuando se configure)
+- `sol_dqn_1d` sin model_path (archivo .zip no localizado en blue5pl) — actualizar cuando se encuentre
+- Copiar modelos .zip de blue5pl a nuevo host NixOS cuando esté listo — actualizar paper_model_path
+- Firewall Hetzner: cerrar SSH público, Tailscale-only
+- `vimet_admin` SUPERUSER en NixOS (manual GRANT o ensureClauses)
+- Fase 7 dual-run: 2 semanas paper_trades v2 vs legacy paper_grad.service
+- Fase 8 chaos drill: 6 tests E1-E6
+- Fase 9 cutover
 
 ## Riesgos / Watch Items
-- `wal-archive-push.service` corre como root — revisar si puede correr como usuario dedicado
-- WAL staging en `/var/lib/wal-archive/` — mismo disco que data dir; si el disco se llena, ambos fallan
-- `deploy-rs` requiere `nix develop --command deploy` (no está en PATH global de WSL)
-- CGNAT: acceso SSH público todavía habilitado en Hetzner firewall — mover a Tailscale-only en Fase 2
+- `trainer.py` usa DATABASE_URL — debe pasarse en config JSON o como env var al invocar desde Go runner
+- `paper_trader.py` equity tracking simplificado (no posición running) — pendiente mejora
+- WAL staging /var/lib/wal-archive/ en mismo disco del NixOS host — monitorear llenado
+- Workers GPU (blue5pl, mtto-server) aún en Ubuntu; trainer-runner binario Go corre standalone
 
 ## Decisiones tomadas
-- Two-stage WAL archive (cp local + rclone timer) — evita seccomp/SIGSYS de Postgres `SystemCallFilter=~@resources`
-- Data dir NixOS Postgres 16: `/var/lib/postgresql/16/` (no `/16/main/`)
-- PITR restore: `recovery.signal` + `postgresql.auto.conf` en data dir — sobrevive pre-start NixOS (solo symlinks `postgresql.conf`)
-- `wal-archive-push` usa known_hosts pinned en nix store (no TOFU, no skip verification)
+- `psycopg2` (no pgx) para Python scripts — compatible con SB3 ecosystem sin deps extra de Go
+- `scripts/env/` como subpaquete Python importado por trainer y paper_trader
+- Migration SQL para legacy seed (no script Python) — más simple, idempotente, atómico con goose
 
 ## Archivos modificados
-- `flake.nix` — añadidos sops-nix + postgres + secrets modules
-- `modules/secrets.nix` — creado
-- `modules/postgres.nix` — creado (two-stage WAL archive)
-- `hosts/vm-control-01/default.nix` — sops secrets + tailscale-autoconnect
-- `.sops.yaml` — age pubkey real
-- `secrets/vm-control-01/{tailscale,storage-box,telegram}.yaml` — encriptados
+- `scripts/trainer.py` — reescrito con TradingEnv + Postgres OHLCV fetch
+- `scripts/paper_trader.py` — reescrito con MarketEnvironment inference
+- `scripts/env/market_env.py` — nuevo
+- `scripts/env/trading_env.py` — nuevo
+- `scripts/env/__init__.py` — nuevo
+- `scripts/data/graduated_legacy.json` — nuevo
+- `scripts/import_legacy_models.py` — nuevo
+- `migrations/00009_legacy_seed.sql` — nuevo (goose up aplicado ✅)
