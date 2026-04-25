@@ -73,7 +73,7 @@
 
       deploy.nodes.mtto-server = {
         # Deploy via Tailscale IP
-        hostname = "100.95.51.67";
+        hostname = "100.72.143.71";
         profiles.system = {
           user = "root";
           sshUser = "wumni";

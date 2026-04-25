@@ -4,10 +4,7 @@ creation_rules:
     age: >-
       age1gl7leqyhfvyaflc7t5cktjq4k75qwnd4kyk79td03lkpxxr35fps03lpuf
 
-  # mtto-server secrets — BOOTSTRAP KEY (temporary, generated 2026-04-24).
-  # After NixOS install, replace with real host age pubkey:
-  #   ssh wumni@100.95.51.67 "cat /var/lib/sops-nix/key.txt | age-keygen -y"
-  # Then run: sops rotate secrets/mtto-server/*.yaml
+  # mtto-server secrets — host age key (generated 2026-04-25 during recovery).
   - path_regex: secrets/mtto-server/.*\.yaml$
     age: >-
-      age14ksz68ln85x642q7773lr60yw5s9hq9dadg8yvdgplxrrg0uds5qg8dg5r
+      age1hwpzl06ekt0fagugzneqt0rtcg852px8tvaxy4lp7mfuw89x5f6s4qavu8
