@@ -47,6 +47,11 @@
     key = "bot_token";
   };
 
+  sops.secrets."n8n/env" = {
+    sopsFile = ../../secrets/vm-control-01/n8n.yaml;
+    key = "env";
+  };
+
   sops.secrets."challenge/env" = {
     sopsFile = ../../secrets/vm-control-01/challenge.yaml;
     key = "env";
@@ -54,6 +59,43 @@
     group = "challenge";
     mode = "0400";
   };
+
+  # n8n — installed via npm to /opt/n8n (nixpkgs build broken for 2.x)
+  systemd.services.n8n = {
+    description = "n8n workflow automation";
+    after = [ "network-online.target" "postgresql.service" ];
+    wants = [ "network-online.target" ];
+    requires = [ "postgresql.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "/opt/n8n/bin/n8n start";
+      Restart = "on-failure";
+      RestartSec = "10s";
+      User = "root";
+      EnvironmentFile = config.sops.secrets."n8n/env".path;
+      Environment = [
+        "N8N_USER_FOLDER=/var/lib/n8n"
+        "DB_TYPE=postgresdb"
+        "DB_POSTGRESDB_HOST=localhost"
+        "DB_POSTGRESDB_PORT=5432"
+        "DB_POSTGRESDB_DATABASE=n8n"
+        "DB_POSTGRESDB_USER=n8n"
+        "N8N_HOST=0.0.0.0"
+        "N8N_PORT=5678"
+        "N8N_EDITOR_BASE_URL=http://100.126.11.26:5678"
+        "WEBHOOK_URL=http://100.126.11.26:5678"
+        "N8N_SECURE_COOKIE=false"
+        "EXECUTIONS_MODE=regular"
+        "GENERIC_TIMEZONE=America/Monterrey"
+        "N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true"
+      ];
+    };
+  };
+
+  systemd.tmpfiles.rules = [
+    "d /var/lib/n8n 0750 root root -"
+  ];
 
   # Tailscale auto-connect on (re)deploy if not already running
   systemd.services.tailscale-autoconnect = {
