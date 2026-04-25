@@ -79,9 +79,14 @@
     key = "n8n_password";
     owner = "postgres";
   };
-  # n8n/cloudflared secrets — re-enable when modules are activated via deploy-rs
-  # sops.secrets."n8n/env" = { ... };
-  # sops.secrets."cloudflared/token" = { ... };
+  sops.secrets."n8n/env" = {
+    sopsFile = ../../secrets/mtto-server/n8n.yaml;
+    key = "env";
+  };
+  sops.secrets."cloudflared/token" = {
+    sopsFile = ../../secrets/mtto-server/cloudflared.yaml;
+    key = "token";
+  };
   sops.secrets."tailscale/authkey" = {
     sopsFile = ../../secrets/mtto-server/tailscale.yaml;
     key = "authkey";
@@ -94,6 +99,44 @@
     owner = "minio";
     mode = "0400";
   };
+
+  # n8n — installed via npm to /opt/n8n (nixpkgs build broken for 2.x)
+  systemd.services.n8n = {
+    description = "n8n workflow automation";
+    after = [ "network-online.target" "postgresql.service" ];
+    wants = [ "network-online.target" ];
+    requires = [ "postgresql.service" ];
+    wantedBy = [ "multi-user.target" ];
+    path = [ pkgs.nodejs_22 ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "/opt/n8n/bin/n8n start";
+      Restart = "on-failure";
+      RestartSec = "10s";
+      User = "root";
+      EnvironmentFile = config.sops.secrets."n8n/env".path;
+      Environment = [
+        "N8N_USER_FOLDER=/var/lib/n8n"
+        "DB_TYPE=postgresdb"
+        "DB_POSTGRESDB_HOST=localhost"
+        "DB_POSTGRESDB_PORT=5432"
+        "DB_POSTGRESDB_DATABASE=n8n"
+        "DB_POSTGRESDB_USER=n8n"
+        "N8N_HOST=0.0.0.0"
+        "N8N_PORT=5678"
+        "N8N_EDITOR_BASE_URL=https://n8n.vimetallum.com"
+        "WEBHOOK_URL=https://n8n.vimetallum.com"
+        "N8N_SECURE_COOKIE=false"
+        "EXECUTIONS_MODE=regular"
+        "GENERIC_TIMEZONE=America/Monterrey"
+        "N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true"
+      ];
+    };
+  };
+
+  systemd.tmpfiles.rules = [
+    "d /var/lib/n8n 0750 root root -"
+  ];
 
   # Tailscale auto-connect (same pattern as vm-control-01)
   systemd.services.tailscale-autoconnect = {

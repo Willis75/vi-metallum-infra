@@ -54,8 +54,8 @@
             ./modules/hardening.nix
             ./modules/postgres-local.nix
             ./modules/redis.nix
-            # ./modules/n8n.nix          # re-enable via deploy-rs after bootstrap
-            # ./modules/cloudflared.nix  # re-enable via deploy-rs after bootstrap
+            # ./modules/n8n.nix          # nixpkgs build broken; n8n installed via npm, service in host config
+            ./modules/cloudflared.nix
             ./modules/minio.nix
             # ./modules/caddy-local.nix  # re-enable via deploy-rs after bootstrap
             # ./modules/mtto-albercas.nix # re-enable via deploy-rs after bootstrap
