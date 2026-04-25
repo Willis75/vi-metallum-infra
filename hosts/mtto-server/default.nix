@@ -25,6 +25,10 @@
   networking.useNetworkd = true;
   systemd.network.enable = true;
 
+  # WiFi — bootstrap only, move to sops secret post-bootstrap
+  networking.wireless.enable = true;
+  networking.wireless.networks."INFINITUM19B0".psk = "mWHEe4C3Dx";
+
   # Disable desktop/GUI services not needed on a headless server
   services.xserver.enable = lib.mkForce false;
   services.printing.enable = lib.mkForce false;
