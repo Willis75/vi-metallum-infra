@@ -14,7 +14,7 @@
       ExecStart = "${pkgs.cloudflared}/bin/cloudflared tunnel --no-autoupdate run --token-file ${config.sops.secrets."cloudflared/token".path}";
       Restart = "on-failure";
       RestartSec = "10s";
-      DynamicUser = true;
+      User = "root";
     };
   };
 }
