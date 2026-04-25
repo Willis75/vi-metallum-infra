@@ -33,8 +33,32 @@
 
   # Disable desktop/GUI services not needed on a headless server
   services.xserver.enable = lib.mkForce false;
-  services.printing.enable = lib.mkForce false;
   hardware.bluetooth.enable = lib.mkForce false;
+
+  # CUPS — print server fallback for HP LaserJet M451dn
+  services.printing = {
+    enable = lib.mkForce true;
+    drivers = [ pkgs.hplip ];
+    listenAddresses = [ "*:631" ];
+    allowFrom = [
+      "192.168.0.0/24"
+      "192.168.1.0/24"
+      "192.168.10.0/24"
+      "192.168.195.0/24"
+      "100.64.0.0/10"
+    ];
+    browsing = true;
+    defaultShared = true;
+  };
+
+  hardware.printers.ensurePrinters = [{
+    name = "hp-m451dn";
+    location = "IOCSA";
+    deviceUri = "socket://192.168.0.101:9100";
+    model = "HP/hp-lj_300_400_color_m351_m451-ps.ppd.gz";
+    ppdOptions.PageSize = "Letter";
+  }];
+  hardware.printers.ensureDefaultPrinter = "hp-m451dn";
 
   users.users.root.initialPassword = "nixos-bootstrap";
   users.users.root.openssh.authorizedKeys.keys = [
