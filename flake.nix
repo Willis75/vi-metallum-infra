@@ -36,6 +36,9 @@
             ./modules/base.nix
             ./modules/hardening.nix
             ./modules/postgres.nix
+            ./modules/redis.nix
+            ./modules/n8n.nix
+            ./modules/challenge.nix
             ./modules/paper-scheduler.nix
             ./modules/python-ml.nix
             ./hosts/vm-control-01
