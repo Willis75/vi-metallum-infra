@@ -67,6 +67,7 @@
     wants = [ "network-online.target" ];
     requires = [ "postgresql.service" ];
     wantedBy = [ "multi-user.target" ];
+    path = [ pkgs.nodejs_22 ];
     serviceConfig = {
       Type = "simple";
       ExecStart = "/opt/n8n/bin/n8n start";
