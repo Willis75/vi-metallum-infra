@@ -48,25 +48,15 @@
     key = "n8n_password";
     owner = "postgres";
   };
-  sops.secrets."n8n/env" = {
-    sopsFile = ../../secrets/mtto-server/n8n.yaml;
-    key = "env";
-    mode = "0400";
-  };
-  sops.secrets."cloudflared/token" = {
-    sopsFile = ../../secrets/mtto-server/cloudflared.yaml;
-    key = "token";
-  };
+  # n8n/cloudflared secrets — re-enable when modules are activated via deploy-rs
+  # sops.secrets."n8n/env" = { ... };
+  # sops.secrets."cloudflared/token" = { ... };
   sops.secrets."tailscale/authkey" = {
     sopsFile = ../../secrets/mtto-server/tailscale.yaml;
     key = "authkey";
   };
-  sops.secrets."mtto-albercas/env" = {
-    sopsFile = ../../secrets/mtto-server/mtto-albercas.yaml;
-    key = "env";
-    owner = "mtto-albercas";
-    mode = "0400";
-  };
+  # mtto-albercas/minio secrets — re-enable via deploy-rs
+  # sops.secrets."mtto-albercas/env" = { ... };
   sops.secrets."minio/credentials" = {
     sopsFile = ../../secrets/mtto-server/minio.yaml;
     key = "credentials";

@@ -51,12 +51,12 @@
             ./modules/hardening.nix
             ./modules/postgres-local.nix
             ./modules/redis.nix
-            ./modules/n8n.nix
-            ./modules/cloudflared.nix
+            # ./modules/n8n.nix          # re-enable via deploy-rs after bootstrap
+            # ./modules/cloudflared.nix  # re-enable via deploy-rs after bootstrap
             ./modules/minio.nix
-            ./modules/caddy-local.nix
-            ./modules/mtto-albercas.nix
-            ./modules/stock-radar.nix
+            # ./modules/caddy-local.nix  # re-enable via deploy-rs after bootstrap
+            # ./modules/mtto-albercas.nix # re-enable via deploy-rs after bootstrap
+            # ./modules/stock-radar.nix  # re-enable via deploy-rs after bootstrap
             ./hosts/mtto-server
           ];
         };
