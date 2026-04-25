@@ -47,50 +47,12 @@
     key = "bot_token";
   };
 
-  sops.secrets."n8n/env" = {
-    sopsFile = ../../secrets/vm-control-01/n8n.yaml;
-    key = "env";
-    restartUnits = [ "n8n.service" ];
-  };
-
-  sops.secrets."n8n/db_password" = {
-    sopsFile = ../../secrets/vm-control-01/n8n.yaml;
-    key = "db_password";
-    owner = "postgres";
-    group = "postgres";
-  };
-
   sops.secrets."challenge/env" = {
     sopsFile = ../../secrets/vm-control-01/challenge.yaml;
     key = "env";
     owner = "challenge";
     group = "challenge";
     mode = "0400";
-  };
-
-  # n8n: grant DB, set password on first boot
-  systemd.services.n8n-db-setup = {
-    description = "n8n DB ownership and password setup";
-    after    = [ "postgresql.service" ];
-    requires = [ "postgresql.service" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      User = "postgres";
-    };
-    path = [ pkgs.postgresql_16 ];
-    script = ''
-      psql -c "GRANT ALL ON DATABASE n8n TO n8n;"
-      PASS=$(cat ${config.sops.secrets."n8n/db_password".path})
-      psql -c "ALTER USER n8n PASSWORD '$PASS';"
-    '';
-  };
-
-  services.n8n.environment = {
-    N8N_EDITOR_BASE_URL = "http://100.126.11.26:5678";
-    WEBHOOK_URL         = "http://100.126.11.26:5678";
-    N8N_SECURE_COOKIE   = "false";
   };
 
   # Tailscale auto-connect on (re)deploy if not already running
