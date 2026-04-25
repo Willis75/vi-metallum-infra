@@ -17,7 +17,6 @@
   ];
 
   systemd.services.minio = {
-    after    = lib.mkAfter [ "sops-nix.service" ];
-    requires = lib.mkAfter [ "sops-nix.service" ];
+    after = lib.mkAfter [ "network.target" ];
   };
 }

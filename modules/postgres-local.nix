@@ -30,8 +30,8 @@
   # Type=oneshot + RemainAfterExit makes it run once per boot idempotently.
   systemd.services.postgres-setup = {
     description = "Grant DB ownership and set service user passwords";
-    after    = [ "postgresql.service" "sops-nix.service" ];
-    requires = [ "postgresql.service" "sops-nix.service" ];
+    after    = [ "postgresql.service" ];
+    requires = [ "postgresql.service" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";

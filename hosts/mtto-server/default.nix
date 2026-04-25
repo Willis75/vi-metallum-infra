@@ -72,7 +72,7 @@
   # Tailscale auto-connect (same pattern as vm-control-01)
   systemd.services.tailscale-autoconnect = {
     description = "Tailscale auto-connect";
-    after = [ "network-online.target" "tailscale.service" "sops-nix.service" ];
+    after = [ "network-online.target" "tailscale.service" ];
     wants = [ "network-online.target" "tailscale.service" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
