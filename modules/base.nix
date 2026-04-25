@@ -32,6 +32,7 @@
     jq
     tcpdump
     file
+    nodejs_22
   ];
 
   services.qemuGuest.enable = true;
