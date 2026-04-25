@@ -19,6 +19,8 @@
 
   boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "sd_mod" ];
   boot.kernelModules = [ "kvm-intel" ];
+  boot.extraModulePackages = [ config.boot.kernelPackages.rtl8821ce ];
+  hardware.enableRedistributableFirmware = true;
 
   # DHCP on all interfaces — Ethernet preferred, WiFi as fallback
   networking.useDHCP = true;
