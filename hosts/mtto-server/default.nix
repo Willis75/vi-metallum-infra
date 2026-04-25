@@ -30,6 +30,7 @@
   services.printing.enable = lib.mkForce false;
   hardware.bluetooth.enable = lib.mkForce false;
 
+  users.users.root.initialPassword = "nixos-bootstrap";
   users.users.root.openssh.authorizedKeys.keys = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMmlyQCPB0J0LYWpqfQFHcv80irO62bWzC1g5lyH5dY wumniam@gmail.com"
   ];
