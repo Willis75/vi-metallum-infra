@@ -60,12 +60,12 @@
     mode = "0400";
   };
 
-  # sops.secrets."cloudflared/token" = {  # re-enable after cloudflared.yaml secret created
-  #   sopsFile = ../../secrets/vm-control-01/cloudflared.yaml;
-  #   key = "token";
-  #   owner = "root";
-  #   mode = "0400";
-  # };
+  sops.secrets."cloudflared/token" = {
+    sopsFile = ../../secrets/vm-control-01/cloudflared.yaml;
+    key = "token";
+    owner = "root";
+    mode = "0400";
+  };
 
   # n8n postgres DB and user (n8n.nix disabled; service runs via npm)
   services.postgresql.ensureDatabases = lib.mkAfter [ "n8n" ];
