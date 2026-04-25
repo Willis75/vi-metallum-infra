@@ -130,6 +130,7 @@
         "EXECUTIONS_MODE=regular"
         "GENERIC_TIMEZONE=America/Monterrey"
         "N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true"
+        "NODE_OPTIONS=--dns-result-order=ipv4first"
       ];
     };
   };

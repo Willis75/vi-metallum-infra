@@ -42,7 +42,8 @@ in
     "d /var/lib/challenge/data        0750 challenge challenge -"
     "d /var/lib/challenge/data/media  0750 challenge challenge -"
     "d /var/lib/challenge/agents      0750 challenge challenge -"
-  ];
+  ] ++ map (a: "d /var/lib/challenge/agents/${a.name}      0750 challenge challenge -") agents
+    ++ map (a: "d /var/lib/challenge/agents/${a.name}/dist  0750 challenge challenge -") agents;
 
   systemd.services = builtins.listToAttrs (map mkAgentService agents);
 }

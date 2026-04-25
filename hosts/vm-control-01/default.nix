@@ -1,4 +1,4 @@
-{ modulesPath, config, pkgs, ... }:
+{ modulesPath, config, pkgs, lib, ... }:
 
 {
   imports = [
@@ -59,6 +59,19 @@
     group = "challenge";
     mode = "0400";
   };
+
+  # sops.secrets."cloudflared/token" = {  # re-enable after cloudflared.yaml secret created
+  #   sopsFile = ../../secrets/vm-control-01/cloudflared.yaml;
+  #   key = "token";
+  #   owner = "root";
+  #   mode = "0400";
+  # };
+
+  # n8n postgres DB and user (n8n.nix disabled; service runs via npm)
+  services.postgresql.ensureDatabases = lib.mkAfter [ "n8n" ];
+  services.postgresql.ensureUsers = lib.mkAfter [
+    { name = "n8n"; ensureDBOwnership = false; }
+  ];
 
   # n8n — installed via npm to /opt/n8n (nixpkgs build broken for 2.x)
   systemd.services.n8n = {

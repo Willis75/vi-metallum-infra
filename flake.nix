@@ -39,6 +39,7 @@
             ./modules/redis.nix
             # ./modules/n8n.nix  # n8n installed via npm post-deploy (nixpkgs build fails)
             ./modules/challenge.nix
+            # ./modules/cloudflared.nix  # re-enable after cloudflared.yaml secret created
             ./modules/paper-scheduler.nix
             ./modules/python-ml.nix
             ./hosts/vm-control-01
