@@ -38,6 +38,7 @@
       RemainAfterExit = true;
       User = "postgres";
     };
+    path = [ pkgs.postgresql_16 ];
     script = ''
       psql -c "GRANT ALL ON DATABASE mtto_albercas TO mtto;"
       psql -c "GRANT ALL ON DATABASE n8n TO n8n;"
