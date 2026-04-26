@@ -40,6 +40,7 @@
             # ./modules/n8n.nix  # n8n installed via npm post-deploy (nixpkgs build fails)
             ./modules/challenge.nix
             ./modules/cloudflared.nix
+            ./modules/nginx-agents.nix
             ./modules/paper-scheduler.nix
             ./modules/python-ml.nix
             ./hosts/vm-control-01
@@ -67,7 +68,7 @@
       };
 
       deploy.nodes.vm-control-01 = {
-        hostname = "178.104.209.199";
+        hostname = "100.126.11.26"; # Tailscale IP (public IP 178.104.209.199 blocks SSH)
         profiles.system = {
           user = "root";
           sshUser = "root";
