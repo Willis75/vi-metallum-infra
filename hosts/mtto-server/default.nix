@@ -65,6 +65,15 @@
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMmlyQCPB0J0LYWpqfQFHcv80irO62bWzC1g5lyH5dY wumniam@gmail.com"
   ];
 
+  users.users.wumni = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ];
+    initialPassword = "mttoserver";
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMmlyQCPB0J0LYWpqfQFHcv80irO62bWzC1g5lyH5dY wumniam@gmail.com"
+    ];
+  };
+
   # sops-nix: age key generated on first boot at this standard path
   sops.age.keyFile = "/var/lib/sops-nix/key.txt";
 
