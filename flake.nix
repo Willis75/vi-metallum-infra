@@ -18,9 +18,14 @@
       url = "github:serokell/deploy-rs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    blue5pl-tbl = {
+      url = "github:Willis75/Blue5PL-TBL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, disko, sops-nix, deploy-rs, ... }:
+  outputs = { self, nixpkgs, disko, sops-nix, deploy-rs, blue5pl-tbl, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
@@ -43,6 +48,7 @@
             ./modules/nginx-agents.nix
             ./modules/paper-scheduler.nix
             ./modules/python-ml.nix
+            blue5pl-tbl.nixosModules.tbl
             ./hosts/vm-control-01
           ];
         };

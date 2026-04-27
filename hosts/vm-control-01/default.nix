@@ -60,6 +60,14 @@
     mode = "0400";
   };
 
+  sops.secrets."tbl/env" = {
+    sopsFile = ../../secrets/vm-control-01/tbl.yaml;
+    key = "env";
+    owner = "tbl";
+    group = "tbl";
+    mode = "0400";
+  };
+
   sops.secrets."cloudflared/token" = {
     sopsFile = ../../secrets/vm-control-01/cloudflared.yaml;
     key = "token";
@@ -68,9 +76,10 @@
   };
 
   # n8n postgres DB and user (n8n.nix disabled; service runs via npm)
-  services.postgresql.ensureDatabases = lib.mkAfter [ "n8n" ];
+  services.postgresql.ensureDatabases = lib.mkAfter [ "n8n" "tbl" ];
   services.postgresql.ensureUsers = lib.mkAfter [
     { name = "n8n"; ensureDBOwnership = false; }
+    { name = "tbl"; ensureDBOwnership = true; }
   ];
 
   # n8n — installed via npm to /opt/n8n (nixpkgs build broken for 2.x)
