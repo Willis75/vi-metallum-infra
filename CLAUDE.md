@@ -67,10 +67,9 @@ vm-control-01 activo con: Postgres 16, Valkey, n8n (npm), challenge agents, Clou
    #   GCP_SERVICE_ACCOUNT_JSON=<base64-sa-json>
    #   BILLING_MANAGER_EMAIL=<email-tbl>
    ```
-2. Añadir ruta en Cloudflare Zero Trust dashboard:
-   - Tunnel → Public Hostname → Add
-   - Subdomain: `tbl`, Domain: `vimetallum.com`
-   - Service: `http://localhost:8081`
+2. ~~Añadir ruta en Cloudflare Zero Trust~~ ✅ Hecho 2026-04-27:
+   - Ingress rule: `tbl.vimetallum.com → http://localhost:8081` (túnel versión 3)
+   - DNS CNAME: `tbl.vimetallum.com → ca6ea1b2-4c43-4ed2-bdbd-7f5174c94cea.cfargotunnel.com` (proxied)
 3. Verificar: `nix flake update blue5pl-tbl` y `nix build .#nixosConfigurations.vm-control-01.config.system.build.toplevel`
 4. Declarar y esperar confirmación del operador antes de `deploy .#vm-control-01`
 
